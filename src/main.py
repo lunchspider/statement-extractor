@@ -10,7 +10,6 @@ def handle_file(file_name : str) -> dict[str, str]:
     text = page.extract_text()
     arr = text.split('\n')
     info = {}
-    print(arr)
     for (index, i) in enumerate(arr):
         if 'Sold By' in i:
             x = i.replace('Sold By: ', '')
@@ -70,7 +69,7 @@ def main(args):
         pdf_path = os.path.join(args.in_dir, file_name)
         print(f'Processing: {pdf_path}')
         info = handle_file(pdf_path)
-        out_path = os.path.join(args.out_dir, f'{info["order_id"]}-{info["invoice_number"]}.pdf')
+        out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]}-{info["order_id"]}-{info["invoice_number"]}.pdf')
         shutil.copyfile(pdf_path, out_path)
         result.append(info)
     df = pd.DataFrame(result)
