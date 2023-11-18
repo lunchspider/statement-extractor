@@ -89,7 +89,7 @@ def main(args):
             shutil.copyfile(pdf_path, out_path)
             continue
 
-        out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]}-{info["order_id"]}-{info["invoice_number"]}.pdf')
+        out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]} {info["order_id"]} {info["invoice_number"]}.pdf')
         shutil.copyfile(pdf_path, out_path)
         result.append(info)
     wb = Workbook(args.out_file)
