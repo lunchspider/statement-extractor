@@ -2,3 +2,4 @@ camelot-py==0.9.0
 numpy==1.25.2
 pandas==2.1.0
 pypdf==3.17.0
+xlsxwriter==3.1.9

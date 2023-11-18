@@ -1,15 +1,18 @@
 import os
 import argparse
-import pandas as pd
 import shutil
+from xlsxwriter import Workbook 
 from pypdf import PdfReader
+
+col_list = ['Buyer GSTIN', 'Buyer Name', 'HSN', 'IGST', 'Seller GSTIN', 'Seller Name', 'file_name', 'imei', 'invoice_date', 'invoice_number', 'order_date', 'order_id', 'product_name', 'qty', 'taxable_value', 'total']
+
 
 def handle_file(file_name : str) -> dict[str, str]:
     reader = PdfReader(file_name)
     page = reader.pages[0]
     text = page.extract_text()
     arr = text.split('\n')
-    info = {}
+    info = {'file_name': file_name}
     for (index, i) in enumerate(arr):
         if 'Sold By' in i:
             x = i.replace('Sold By: ', '')
@@ -44,7 +47,12 @@ def handle_file(file_name : str) -> dict[str, str]:
             info['taxable_value'] = s[-3]
         if 'Order ID:' in i:
             info['Buyer GSTIN'] = i.split(' ')[0]
-            info['order_id'] = arr[index + 1].strip()
+            if 'Order Date:'  in arr[index + 1]:
+                info['order_id'] = i.split(' ')[3]
+                pass
+            else:
+                info['order_id'] = arr[index + 1].strip()
+
         if 'HSN' in i:
             s = i.replace('HSN/SAC: ', '').strip()
             hsn = ''
@@ -59,7 +67,7 @@ def handle_file(file_name : str) -> dict[str, str]:
 
 
 def main(args):
-    result = []
+    result : list[dict[str, str]]= []
     if not os.path.isdir(args.out_dir):
         os.makedirs(args.out_dir)
     for file_name in os.listdir(args.in_dir):
@@ -69,11 +77,33 @@ def main(args):
         pdf_path = os.path.join(args.in_dir, file_name)
         print(f'Processing: {pdf_path}')
         info = handle_file(pdf_path)
+
+        # file is possibly curropted!
+        if sorted(info.keys()) != col_list:
+            print('file curropted!')
+            if not os.path.isdir('./curropted'):
+                os.makedirs('./curropted')
+            out_path = os.path.join('./curropted/', file_name)
+            shutil.copyfile(pdf_path, out_path)
+            continue
+
         out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]}-{info["order_id"]}-{info["invoice_number"]}.pdf')
         shutil.copyfile(pdf_path, out_path)
         result.append(info)
-    df = pd.DataFrame(result)
-    df.to_excel(args.out_file, index = False)
+    wb = Workbook(args.out_file)
+    ws=wb.add_worksheet("New Sheet")
+    first_row = 0
+    for header in col_list:
+        col=col_list.index(header) # We are keeping order.
+        ws.write(first_row,col,header) # We have written first row which is the header of worksheet also.
+    row = 1
+    for item in result:
+        for _key,_value in item.items():
+            col=col_list.index(_key)
+            ws.write(row,col,_value)
+        row+=1 #enter the next row
+    wb.close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
