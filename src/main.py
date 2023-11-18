@@ -47,6 +47,8 @@ def handle_file(file_name : str) -> dict[str, str]:
             info['taxable_value'] = s[-3]
         if 'Order ID:' in i:
             info['Buyer GSTIN'] = i.split(' ')[0]
+            if 'Phone' in info['Buyer GSTIN']:
+                info['Buyer GSTIN'] = 'Not found'
             if 'Order Date:'  in arr[index + 1]:
                 info['order_id'] = i.split(' ')[3]
                 pass
