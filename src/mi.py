@@ -108,17 +108,21 @@ def main(args):
             continue
         pdf_path = os.path.join(args.in_dir, file_name)
         print(f'Processing: {pdf_path}')
-        info = handle_file(pdf_path)
 
-        # file is possibly curropted!
-        for info  in info:
-            if sorted(info.keys()) != col_list:
-                print('file curropted!')
-                if not os.path.isdir('./curropted'):
-                    os.makedirs('./curropted')
-                out_path = os.path.join('./curropted/', file_name)
-                shutil.copyfile(pdf_path, out_path)
-                continue
+        try:
+            info = handle_file(pdf_path)
+
+            # file is possibly curropted!
+            for info  in info:
+                if sorted(info.keys()) != col_list:
+                    raise SystemError('File curropeted')
+        except:
+            print('file curropted!')
+            if not os.path.isdir('./curropted'):
+                os.makedirs('./curropted')
+            out_path = os.path.join('./curropted/', file_name)
+            shutil.copyfile(pdf_path, out_path)
+            continue
 
             out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]} {info["Order Number"]} {info["Invoice Number"]}.pdf')
             shutil.copyfile(pdf_path, out_path)
