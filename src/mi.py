@@ -116,6 +116,10 @@ def main(args):
             for info  in info:
                 if sorted(info.keys()) != col_list:
                     raise SystemError('File curropeted')
+
+                out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]} {info["Order Number"]} {info["Invoice Number"]}.pdf')
+                shutil.copyfile(pdf_path, out_path)
+                result.append(info)
         except:
             print('file curropted!')
             if not os.path.isdir('./curropted'):
@@ -124,9 +128,6 @@ def main(args):
             shutil.copyfile(pdf_path, out_path)
             continue
 
-            out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]} {info["Order Number"]} {info["Invoice Number"]}.pdf')
-            shutil.copyfile(pdf_path, out_path)
-            result.append(info)
     wb = Workbook(args.out_file)
     ws=wb.add_worksheet("New Sheet")
     first_row = 0
