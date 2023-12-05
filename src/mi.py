@@ -4,24 +4,25 @@ import shutil
 from xlsxwriter import Workbook 
 from pypdf import PdfReader
 
-col_list = sorted([
+col_list = ([
     'file_name',
-    'Seller Legal Name',
-    'Seller GSTIN',
     'Order Number',
     'Order Date',
-    'Invoice Number',
     'Invoice Date',
-    'Buyer Legal Name',
+    'Invoice Number',
+    'Seller Legal Name',
+    'Seller GSTIN',
     'Buyer GSTIN',
+    'Buyer Legal Name',
     'name',
     'hsn',
     'qty',
-    'total amount',
     'assesable_value',
     'igst',
     'cgst',
-    'sgst'
+    'sgst',
+    'total amount',
+    'TCS',
 ])
 
 
@@ -55,6 +56,8 @@ def handle_file(file_name : str) -> list[dict[str, str]]:
             info['Buyer GSTIN'] = i.split(' ')[2].strip()
         if 'Seller GSTIN' in i:
             info['Seller GSTIN'] = i.split(' ')[2].strip()
+        if 'TCS' in i:
+            info['TCS'] = i.split(' ')[1].strip()
         if 'Item Total' in i:
             pos = index
             while True:
@@ -75,7 +78,7 @@ def handle_file(file_name : str) -> list[dict[str, str]]:
                     index_of_nos = l.index('Nos')
                     hsn = l[index_of_nos - 3]
                     qty = l[index_of_nos - 1]
-                    total_amount = l[index_of_nos + 2]
+                    total_amount = l[index_of_nos + 13]
                     assesable_value = l[index_of_nos + 4]
                     igst = l[index_of_nos + 9]
                     cgst = l[index_of_nos + 10]
@@ -114,19 +117,20 @@ def main(args):
 
             # file is possibly curropted!
             for info  in info:
-                if sorted(info.keys()) != col_list:
+                if sorted(info.keys()) != sorted(col_list):
                     raise SystemError('File curropeted')
 
                 out_path = os.path.join(args.out_dir, f'{info["Buyer GSTIN"]} {info["Order Number"]} {info["Invoice Number"]}.pdf')
                 shutil.copyfile(pdf_path, out_path)
                 result.append(info)
-        except:
+        except Exception as ex:
+            print(ex)
             print('file curropted!')
             if not os.path.isdir('./curropted'):
                 os.makedirs('./curropted')
             out_path = os.path.join('./curropted/', file_name)
             shutil.copyfile(pdf_path, out_path)
-            continue
+        break
 
     wb = Workbook(args.out_file)
     ws=wb.add_worksheet("New Sheet")
