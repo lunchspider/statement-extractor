@@ -130,7 +130,6 @@ def main(args):
                 os.makedirs('./curropted')
             out_path = os.path.join('./curropted/', file_name)
             shutil.copyfile(pdf_path, out_path)
-        break
 
     wb = Workbook(args.out_file)
     ws=wb.add_worksheet("New Sheet")
